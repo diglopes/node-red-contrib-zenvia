@@ -3,6 +3,12 @@
   "version": "0.0.1",
   "description": "A Node-RED node to work with Zenvia products.",
   "main": "index.js",
+  "node-red": {
+    "nodes": {
+      "zenvia whatsapp": "nodes/zenvia-whatsapp.js",
+      "zenvia credentials": "nodes/zenvia-credentials.js"
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

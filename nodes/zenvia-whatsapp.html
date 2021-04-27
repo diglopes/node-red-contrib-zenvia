@@ -1,0 +1,117 @@
+<script type="text/x-red" data-template-name="zenvia whatsapp">
+    <div class="form-row">
+        <label for="node-input-authentication"><i class="fa fa-key"></i> Auth</label>
+        <input type="text" id="node-input-authentication">
+      </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-tasks"></i> Action</label>
+        <select id="node-input-action" style="width: 70%;">
+            <option selected value="template">Template messages</option>
+        </select>
+    </div>
+    <div class="form-row" style="display: flex; align-items: center;">
+        <label for="node-input-template" style="width: 100px;"><i class="fa fa-comment-o"></i> Templates</label>
+        <div style="width: 70%; display: flex; margin-left: 4px;">
+            <select id="node-input-template" style="flex: 1; margin-right: 8px;">
+                <option disabled selected value="">Select a template</option>
+            </select>
+            <button id="load-templates-btn" type="button" class="red-ui-button">
+                <div class="loading-templates" style="display: none;">
+                    <i class="fa fa-hourglass"></i> Loading
+                </div>
+                <div class="load-templates">
+                    Load
+                </div>
+            </button>
+        </div>
+    </div>
+     <div class="form-row">
+         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+         <input type="text" id="node-input-name" placeholder="Name">
+     </div>
+ </script>
+
+ <script type="text/x-red" data-help-name="zenvia whatsapp">
+    <p>Simple sample input node. Just sends a single message when it starts up.
+    This is not very useful.</p>
+    <p>Outputs an object called <code>msg</code> containing <code>msg.topic</code> and
+    <code>msg.payload</code>. msg.payload is a String.</p>
+ </script>
+
+ <script type="text/javascript">
+ (() => {
+    function appendTemplateOptions(JQElement, templates, selectedValue) {
+        JQElement.empty()
+        JQElement.append("<option disabled selected value=\"\">Select a template</option>")
+        templates.forEach(({ name, id }) => {
+            JQElement.append(`<option value="${id}">${name.trim()}</option>`)
+        })
+        if(selectedValue) JQElement
+            .find(`option[value=${selectedValue}]`)
+            .attr("selected", "selected")
+    }
+    
+     RED.nodes.registerType('zenvia whatsapp', {
+         category: 'network',
+         defaults: {
+            authentication: { value: "", type: "zenvia credentials"},
+            name: { value: "" },
+            templateList: { value: [] },
+            template: { value: "" },
+            action: { value: "template"}
+         },
+         inputs:1,
+         outputs:1, 
+         color: "#fff",
+         icon: "zenvia.svg",
+         label: function() { 
+             return this.name||"zenvia whatsapp";
+         },
+         labelStyle: function() { // sets the class to apply to the label
+             return this.name ? "node_label_italic" : "";
+         },
+         oneditprepare: function() {
+            const loadButton = $("#load-templates-btn")
+            const templatesSelect = $("#node-input-template")
+            const nodeIdRegex = /^\w{6,}\.\w{6,}$/
+            
+            appendTemplateOptions(templatesSelect, this.templateList, this.template)
+            loadButton.click(async () => {
+                const authNodeId = $("#node-input-authentication").val()
+                if(nodeIdRegex.test(authNodeId)) {
+                    const response = await fetch(`/credentials/zenvia-credentials/${authNodeId}/values`)
+                    const { credentials } = await response.json()
+                    $(".loading-templates").show()
+                    $(".load-templates").hide()
+                    loadButton.prop("disabled", true)
+                    templatesSelect.prop("disabled", true)
+                    fetch("https://api.zenvia.com/v2/templates", {
+                        headers: {
+                            'X-API-TOKEN': credentials.apiToken
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(templates => {
+                            this.templateList = templates
+                            appendTemplateOptions(templatesSelect, templates, this.template)
+                        })
+                        .finally(() => {
+                            loadButton.prop("disabled", false)
+                            templatesSelect.prop("disabled", false)
+                            $(".load-templates").show()
+                            $(".loading-templates").hide()
+                        })
+                } else {
+                    RED._debug("sem credencial")
+                }
+            })
+         },
+         oneditsave: function() {
+            $("#load-templates-btn").off()
+         },
+         oneditcancel: function() {
+            $("#load-templates-btn").off()
+         }
+     });
+ })()
+</script>
