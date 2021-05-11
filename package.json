@@ -27,5 +27,8 @@
   "bugs": {
     "url": "https://github.com/diglopes/node-red-contrib-zenvia/issues"
   },
-  "homepage": "https://github.com/diglopes/node-red-contrib-zenvia#readme"
+  "homepage": "https://github.com/diglopes/node-red-contrib-zenvia#readme",
+  "dependencies": {
+    "@zenvia/sdk": "^1.5.0"
+  }
 }
