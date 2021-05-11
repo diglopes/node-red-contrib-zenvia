@@ -6,6 +6,7 @@ module.exports = function(RED) {
     RED.nodes.registerType("zenvia credentials", ZenviaCredentials, {
         credentials: {
             apiToken: { type: "password", required:true },
+            senderId: { type: "string", required: true }
         }
     });
 }
