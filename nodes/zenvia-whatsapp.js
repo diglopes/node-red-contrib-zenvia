@@ -1,4 +1,6 @@
 const ZenviaError = require("./errors/zenvia-error")
+const zenviaSDK = require("@zenvia/sdk")
+const { zenvia } = require("../lib/constants")
 
 module.exports = function(RED) {
     "use strict";
@@ -12,9 +14,17 @@ module.exports = function(RED) {
         })
 
         this.on("input", (msg, send, done) => {
+
             try {
                 if(!n.template) throw new ZenviaError({ msg: "Template must be set" })
+                const fields = msg.payload
+                const templateId = n.template
+                const fieldsKeys = Object.keys(fields)
+                const [template] = n.templateList.filter(item => item.id === templateId)
+                const hasAllFields = template.fields.every(f => fieldsKeys.includes(f))
+                if(!hasAllFields) throw new ZenviaError({ msg: "Not all template fields are filled" })
                 msg.payload = { template: n.template, apiToken }
+                msg.payload = { template }
                 send(msg)
                 done()
             } catch (error) {
