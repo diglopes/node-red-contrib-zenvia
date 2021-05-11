@@ -85,7 +85,7 @@
                     $(".load-templates").hide()
                     loadButton.prop("disabled", true)
                     templatesSelect.prop("disabled", true)
-                    fetch("https://api.zenvia.com/v2/templates", {
+                    fetch("https://api.zenvia.com/v2/templates?channel=WHATSAPP&status=APPROVED", {
                         headers: {
                             'X-API-TOKEN': credentials.apiToken
                         }
