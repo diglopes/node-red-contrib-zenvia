@@ -25,6 +25,7 @@ module.exports = function (RED) {
 
     this.on("input", async (msg, send, done) => {
       try {
+        this.status({});
         if (!n.template) throw new ZenviaError({ msg: "Template must be set" });
         const recipient = msg.recipient;
         const fields = msg.payload;
@@ -44,8 +45,18 @@ module.exports = function (RED) {
         send(msg);
         done();
       } catch (error) {
-        done(error);
+        this.status({ fill: "red", shape: "ring", text: "Failed" });
+        if (error.httpStatusCode) {
+          done(new ZenviaError({ msg: error.body.message }));
+        } else {
+          done(error);
+        }
       }
+    });
+
+    this.on("close", (_, done) => {
+      this.status({});
+      done();
     });
   }
 
