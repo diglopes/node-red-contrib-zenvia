@@ -92,8 +92,13 @@
                     })
                         .then(response => response.json())
                         .then(templates => {
-                            this.templateList = templates
-                            appendTemplateOptions(templatesSelect, templates, this.template)
+                            if(templates.code) {
+                                const msg = `${templates.code}: ${templates.message}`
+                                RED.notify(msg, { type: "warning" })
+                            } else {
+                                this.templateList = templates
+                                appendTemplateOptions(templatesSelect, templates, this.template)
+                            }
                         })
                         .finally(() => {
                             loadButton.prop("disabled", false)
